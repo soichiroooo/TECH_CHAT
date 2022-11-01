@@ -1,0 +1,117 @@
+1. アプリケーションの新規作成手順
+
+  Railsアプリケーションの新規作成
+    アプリケーションを作成したいディレクトリに移動する
+      rails _6.0.0_ new TECH_CHAT -d mysql
+
+  データベースの作成
+    「rails db:create」
+    Sequel Proで作成できたかを確認
+    「rails s」でサーバーを起動
+    ブラウザで「http://localhost:3000」にアクセス
+
+
+2. 一覧機能（indexアクション）を実装する手順
+
+  コントローラーの作成
+    「rails g controller questions」
+  
+  コントローラーの設定
+    「app/controllers/posts_controller.rb」に以下のように記述して「index」アクションを定義
+
+      def index
+        @questions = Question.all
+      end
+
+  ルーティングの設定
+    「config/routes.rb」ファイルに以下を記述
+    「resources」
+
+  モデルの作成
+    「rails g model モデル名(今回はpost)」でPostモデルを作成
+    「db/migrate/20XXXXXXXXXXXX_create_posts.rb」が作成されていることを確認
+    マイグレーションファイルを編集（テーブルにカラムを追加する）
+      今回は「def change ~ end」内を以下のように追記
+      
+        def change
+          create_table :posts do |t|
+            t.text :content
+            t.timestamps
+          end
+        end
+
+    「rails db:migrate」でデータベースに反映
+    「posts」テーブルが作成され、「content」カラムが追加されていることを確認
+    
+        ※「rails db:migrate:status」でマイグレーションの状況を確認できる
+
+  ビューの作成
+    「app/views/posts」ディレクトリ内に「index.html.erb」を作成
+    「app/views/posts/index.html.erb」を以下のように編集
+
+        <h1>トップページ</h1>
+        <%= link_to '新規投稿', '/posts/new' %>
+        <% @posts.each do |post| %>
+          <div class="post">
+            <div class="post-date">
+              投稿日時：<%= post.created_at %>
+            </div>
+            <div class="post-content">
+              <%= post.content %>
+            </div>
+          </div>
+        <% end %>
+
+      CSSファイルを作成
+        「app/assets/stylesheets」ディレクトリ内に「posts.css」を作成
+        「app/assets/stylesheets/posts.css」を以下の通り記述
+            .post{
+              border: 1px solid;
+              width: 40%;
+              margin-top: 30px;
+            }
+
+            .post-date{
+              color: gray;
+            }
+
+
+3. 投稿画面（newアクション）を作成する手順
+  コントローラーの設定
+    「app/controllers/posts_controller.rb」に以下を追記
+
+        def new
+        end
+  
+  ルーティングの設定
+    「config/routes.rb」に「get 'posts/new', to: 'posts#new'」を追記
+
+  ビューの作成と設定
+    「app/views/posts」ディレクトリ内に、「new.html.erb」を作成
+    「app/views/posts/new.html.erb」に以下を記述
+    
+      <h1>新規投稿ページ</h1>
+      <%= form_with url: "/posts", method: :post, local: true do |form| %>
+        <%= form.text_field :content %>
+        <%= form.submit '投稿する' %>
+      <% end %>
+
+
+4. 保存機能（createアクション）を実装する手順
+  コントローラーの設定
+    「app/controllers/posts_controller.rb」に以下を追記
+
+        def create
+          Post.create(content: params[:content])
+        end
+
+  ルーティングの設定
+    「config/routes.rb」に「post 'posts', to: 'posts#create'」を追記
+
+  ビューの作成
+    「app/views/posts」ディレクトリ内に、「create.html.erb」を作成
+    「app/views/posts/create.html.erb」に以下を記述
+
+        <h1>投稿が完了しました</h1>
+        <%= link_to 'トップページに戻る', '/posts' %>
+
