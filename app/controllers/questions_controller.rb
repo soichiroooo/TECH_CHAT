@@ -1,5 +1,5 @@
 class QuestionsController < ApplicationController
-  
+
   def index
     @questions = Question.all
   end
@@ -10,6 +10,7 @@ class QuestionsController < ApplicationController
 
   def create
     Question.create(question_params)
+    redirect_to action: :index
   end
 
   private
